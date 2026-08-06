@@ -1,1 +1,6 @@
-node_modules\ndist\n.env\n*.db\n*.db-journal\ndata/
+node_modules
+dist
+.env
+*.db
+*.db-journal
+data/

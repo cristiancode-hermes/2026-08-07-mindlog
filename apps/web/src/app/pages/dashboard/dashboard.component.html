@@ -1,0 +1,59 @@
+@if (loading()) {
+  <div class="loading-state">
+    <div class="spinner-lg"></div>
+    <p>Loading your journal…</p>
+  </div>
+} @else {
+  <div class="dashboard">
+    <header class="page-header">
+      <h1>Welcome{{ auth.currentUser()?.displayName ? ', ' + auth.currentUser()?.displayName : '' }}!</h1>
+      <p class="subtitle">{{ todayEntry() ? 'You have an entry for today' : 'No entry yet today' }}</p>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">{{ analytics()?.streak ?? '-' }}</div>
+        <div class="stat-label">Day Streak</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ analytics()?.totalEntries ?? '-' }}</div>
+        <div class="stat-label">Total Entries</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">
+          {{ analytics()?.avgMood != null ? (analytics()?.avgMood ?? 0 | number:'1.1-1') : '-' }}
+        </div>
+        <div class="stat-label">Avg Mood</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ analytics()?.recentEntries ?? '-' }}</div>
+        <div class="stat-label">Recent 30 Days</div>
+      </div>
+    </div>
+
+    <div class="today-section">
+      <h2>Today</h2>
+      @if (todayEntry()) {
+        <div class="today-card" (click)="navigateToEditor(todayEntry()!.date)">
+          <div class="today-mood">
+            {{ todayEntry()?.mood ? moodEmojis[todayEntry()!.mood!] : '📝' }}
+          </div>
+          <div class="today-content">
+            <strong>{{ todayEntry()?.title || 'Untitled' }}</strong>
+            <p>{{ todayEntry()?.content | slice:0:120 }}{{ (todayEntry()?.content?.length ?? 0) > 120 ? '…' : '' }}</p>
+          </div>
+          <span class="today-edit">Edit →</span>
+        </div>
+      } @else {
+        <div class="today-card today-empty" (click)="navigateToEditor()">
+          <div class="today-mood">✨</div>
+          <div class="today-content">
+            <strong>No entry yet</strong>
+            <p>Click here to write about your day</p>
+          </div>
+          <span class="today-edit">Write →</span>
+        </div>
+      }
+    </div>
+  </div>
+}

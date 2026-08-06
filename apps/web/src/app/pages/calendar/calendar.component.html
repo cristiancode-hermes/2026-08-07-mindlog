@@ -1,0 +1,50 @@
+@if (loading()) {
+  <div class="loading-state">
+    <div class="spinner-lg"></div>
+  </div>
+} @else {
+  <div class="calendar-page">
+    <header class="page-header">
+      <h1>Calendar</h1>
+    </header>
+
+    <div class="calendar-nav">
+      <button class="btn btn-ghost" (click)="prevMonth()">←</button>
+      <div class="month-label">
+        <strong>{{ monthNames[currentMonth()] }} {{ currentYear() }}</strong>
+        <button class="btn btn-today" (click)="goToToday()">Today</button>
+      </div>
+      <button class="btn btn-ghost" (click)="nextMonth()">→</button>
+    </div>
+
+    <div class="calendar-legend">
+      <span class="legend-item"><span class="legend-dot" style="background:var(--mood-5)"></span>Great</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--mood-4)"></span>Good</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--mood-3)"></span>Okay</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--mood-2)"></span>Bad</span>
+      <span class="legend-item"><span class="legend-dot" style="background:var(--mood-1)"></span>Terrible</span>
+    </div>
+
+    <div class="calendar-grid">
+      @for (name of dayNames; track name) {
+        <div class="day-header">{{ name }}</div>
+      }
+      @for (day of days(); track day.date) {
+        <div
+          class="day-cell"
+          [class.other-month]="!day.isCurrentMonth"
+          [class.today]="day.isToday"
+          (click)="openDay(day.date, day.entryId)"
+        >
+          <span class="day-number">{{ day.day }}</span>
+          @if (day.mood != null) {
+            <span
+              class="mood-dot"
+              [style.background]="moodColors[day.mood]"
+            ></span>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

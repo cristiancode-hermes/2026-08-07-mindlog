@@ -1,0 +1,112 @@
+@if (loading()) {
+  <div class="loading-state">
+    <div class="spinner-lg"></div>
+  </div>
+} @else if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+} @else {
+  <div class="insights">
+    <header class="page-header">
+      <h1>Insights</h1>
+    </header>
+
+    <div class="summary-row">
+      <div class="summary-card">
+        <span class="summary-value">{{ analytics()?.streak ?? 0 }}</span>
+        <span class="summary-label">Day Streak 🔥</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value">{{ analytics()?.totalEntries ?? 0 }}</span>
+        <span class="summary-label">Total Entries</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-value">{{ (analytics()?.avgMood ?? 0) | number:'1.1-1' }}</span>
+        <span class="summary-label">Avg Mood</span>
+      </div>
+    </div>
+
+    <!-- Mood Trends Line Chart -->
+    <div class="chart-section">
+      <h2>Mood Trends</h2>
+      @if ((analytics()?.trends?.length ?? 0) >= 2) {
+        <div class="chart-container">
+          <svg [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight" class="line-chart">
+            <!-- Grid lines -->
+            @for (yl of yLabels(); track yl.label) {
+              <line
+                [attr.x1]="30" [attr.y1]="yl.y"
+                [attr.x2]="chartWidth - 30" [attr.y2]="yl.y"
+                stroke="var(--border-color)" stroke-width="1"
+              />
+              <text x="15" [attr.y]="yl.y + 5" text-anchor="end" font-size="12" fill="var(--text-secondary)">
+                {{ yl.label }}
+              </text>
+            }
+            <!-- Line -->
+            <path [attr.d]="linePath()" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" />
+            <!-- Dots -->
+            @for (dot of lineDots(); track dot.date) {
+              <circle
+                [attr.cx]="dot.cx" [attr.cy]="dot.cy"
+                r="4" fill="var(--accent)"
+                stroke="var(--bg-card)" stroke-width="1.5"
+              >
+                <title>{{ dot.date }} — {{ moodEmojis[dot.mood] }} {{ moodLabels[dot.mood] }}</title>
+              </circle>
+            }
+          </svg>
+        </div>
+      } @else {
+        <p class="no-data">Not enough data for trend chart. Write more entries!</p>
+      }
+    </div>
+
+    <!-- Mood Distribution Bar Chart -->
+    <div class="chart-section">
+      <h2>Mood Distribution</h2>
+      @if ((analytics()?.distribution?.length ?? 0) > 0) {
+        <div class="bar-chart">
+          @for (d of (analytics()?.distribution ?? []); track d.mood) {
+            <div class="bar-row">
+              <span class="bar-label">{{ moodEmojis[d.mood] }} {{ moodLabels[d.mood] }}</span>
+              <div class="bar-track">
+                <div
+                  class="bar-fill"
+                  [style.background]="moodColors[d.mood]"
+                  [style.width.%]="(d.count / maxDistribution) * 100"
+                ></div>
+              </div>
+              <span class="bar-count">{{ d.count }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="no-data">No mood data yet.</p>
+      }
+    </div>
+
+    <!-- Top Tags -->
+    <div class="chart-section">
+      <h2>Top Tags</h2>
+      @if ((analytics()?.topTags?.length ?? 0) > 0) {
+        <div class="tags-chart">
+          @for (t of (analytics()?.topTags ?? []); track t.name) {
+            <div class="tag-row">
+              <span class="bar-label">{{ t.name }}</span>
+              <div class="bar-track">
+                <div
+                  class="bar-fill"
+                  [style.background]="t.color || 'var(--accent)'"
+                  [style.width.%]="(t.count / maxTagCount) * 100"
+                ></div>
+              </div>
+              <span class="bar-count">{{ t.count }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="no-data">No tags used yet.</p>
+      }
+    </div>
+  </div>
+}

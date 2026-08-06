@@ -1,0 +1,87 @@
+@if (loading()) {
+  <div class="loading-state">
+    <div class="spinner-lg"></div>
+  </div>
+} @else {
+  <div class="editor">
+    <header class="page-header">
+      <h1>{{ isEditing() ? 'Edit Entry' : 'New Entry' }}</h1>
+    </header>
+
+    @if (error()) {
+      <div class="alert alert-error">{{ error() }}</div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="editor-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="date">Date</label>
+          <input id="date" type="date" formControlName="date" />
+        </div>
+        <div class="form-group">
+          <label for="title">Title (optional)</label>
+          <input id="title" type="text" formControlName="title" placeholder="What's on your mind?" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Mood</label>
+        <div class="mood-selector">
+          @for (m of moodEmojis; track m.value) {
+            <button
+              type="button"
+              class="mood-btn"
+              [class.active]="form.value.mood === m.value"
+              (click)="form.patchValue({ mood: m.value })"
+              [title]="m.label"
+            >
+              <span class="mood-emoji">{{ m.emoji }}</span>
+              <span class="mood-label">{{ m.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="content">What happened today?</label>
+        <textarea
+          id="content"
+          formControlName="content"
+          placeholder="Write about your day…"
+          rows="8"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Tags</label>
+        <div class="tags-selector">
+          @for (tag of tags(); track tag.id) {
+            <button
+              type="button"
+              class="tag-chip"
+              [class.selected]="(form.value.tagIds || []).includes(tag.id)"
+              (click)="toggleTag(tag.id)"
+              [style.--tag-color]="tag.color || 'var(--accent)'"
+            >
+              {{ tag.name }}
+            </button>
+          }
+          @if (tags().length === 0) {
+            <span class="no-tags">No tags yet. Create them in Settings.</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
+          @if (saving()) {
+            <span class="spinner"></span> Saving…
+          } @else {
+            {{ isEditing() ? 'Update Entry' : 'Save Entry' }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+}

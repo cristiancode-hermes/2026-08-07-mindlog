@@ -1,0 +1,74 @@
+@if (error()) {
+  <div class="alert alert-error">{{ error() }}</div>
+}
+
+<div class="journal-list">
+  <header class="page-header">
+    <h1>Journal</h1>
+    <a routerLink="/editor" class="btn btn-primary">+ New Entry</a>
+  </header>
+
+  <div class="filters-bar" [formGroup]="filterForm">
+    <input
+      type="text"
+      formControlName="search"
+      placeholder="Search entries…"
+      class="search-input"
+    />
+    <select formControlName="mood" class="filter-select">
+      <option value="">All moods</option>
+      @for (m of moods; track m) {
+        <option [value]="m">{{ moodEmojis[m] }} Mood {{ m }}</option>
+      }
+    </select>
+    <select formControlName="tag" class="filter-select">
+      <option value="">All tags</option>
+      @for (t of tags(); track t.id) {
+        <option [value]="t.name">{{ t.name }}</option>
+      }
+    </select>
+    <button class="btn btn-ghost" (click)="clearFilters()">Clear</button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner-lg"></div>
+    </div>
+  } @else if (entries().length === 0) {
+    <div class="empty-state">
+      <p>No entries found</p>
+      <a routerLink="/editor" class="btn btn-primary">Write your first entry</a>
+    </div>
+  } @else {
+    <div class="entries-list">
+      @for (entry of entries(); track entry.id) {
+        <div class="entry-card" (click)="editEntry(entry.id)">
+          <div class="entry-mood">{{ entry.mood ? moodEmojis[entry.mood] : '' }}</div>
+          <div class="entry-body">
+            <div class="entry-header">
+              <strong>{{ entry.title || 'Untitled' }}</strong>
+              <span class="entry-date">{{ entry.date | date:'MMM d, yyyy' }}</span>
+            </div>
+            <p class="entry-preview">{{ entry.content | slice:0:150 }}{{ entry.content.length > 150 ? '…' : '' }}</p>
+            @if (entry.tags?.length) {
+              <div class="entry-tags">
+                @for (tag of entry.tags; track tag.id) {
+                  <span class="tag" [style.--tag-color]="tag.color || 'var(--accent)'">{{ tag.name }}</span>
+                }
+              </div>
+            }
+          </div>
+          <button class="btn-delete" (click)="deleteEntry(entry.id, $event)" title="Delete entry">✕</button>
+        </div>
+      }
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button class="btn btn-ghost" [disabled]="page() === 1" (click)="goToPage(page() - 1)">← Prev</button>
+        <span class="page-info">Page {{ page() }} of {{ totalPages }}</span>
+        <button class="btn btn-ghost" [disabled]="page() === totalPages" (click)="goToPage(page() + 1)">Next →</button>
+      </div>
+    }
+  }
+</div>
